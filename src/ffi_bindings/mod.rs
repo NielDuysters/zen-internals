@@ -175,8 +175,10 @@ pub unsafe extern "C" fn idor_analyze_sql_ffi(
 
         let json = match idor_analyze_sql(query_str, dialect) {
             Ok(results) => serde_json::to_string(&results)
-                .unwrap_or_else(|e| format!(r#"{{"error":"{}"}}"#, e)),
-            Err(e) => format!(r#"{{"error":"{}"}}"#, e),
+                .unwrap_or_else(|e| {
+                    serde_json::json!({ "error": e.to_string() }).to_string()
+                }),
+            Err(e) => serde_json::json!({ "error": e }).to_string(),
         };
 
         CString::new(json)
